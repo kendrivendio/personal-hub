@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>// personal_hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --burgundy: #800020;
+    --neon-magenta: #ff00c8;
+    --neon-green: #39ff14;
+    --dark-bg: #050508;
+    --panel-bg: #0a0a0f;
+    --panel-border: #1a1a2e;
+    --text-primary: #e0e0ff;
+    --text-muted: #6060a0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--dark-bg); color: var(--text-primary); font-family: 'Rajdhani', sans-serif; font-size: 16px; min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,245,255,0.03) 2px, rgba(0,245,255,0.03) 4px); pointer-events: none; z-index: 9999; }
+  body::after { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; position: relative; z-index: 1; }
+
+  .site-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0 2rem; border-bottom: 1px solid var(--panel-border); margin-bottom: 2rem; }
+  .site-logo { font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 900; color: var(--burgundy); text-shadow: 0 0 20px rgba(247,0,255,0.6); letter-spacing: 0.1em; }
+  .site-logo span { color: var(--neon-magenta); }
+  .header-right { display: flex; align-items: center; gap: 1rem; }
+  .header-status { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: var(--neon-green); display: flex; align-items: center; gap: 0.5rem; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); animation: blink 1.8s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .owner-btn { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; cursor: pointer; border: 1px solid var(--panel-border); color: var(--text-muted); padding: 4px 10px; transition: all 0.2s; }
+  .owner-btn:hover { border-color: var(--burgundy); color: var(--burgundy); }
+  .owner-btn.active { border-color: var(--neon-magenta); color: var(--neon-magenta); box-shadow: 0 0 10px rgba(255,0,200,0.3); }
+
+  .panel { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 2px; position: relative; overflow: hidden; }
+  .panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--burgundy), transparent); }
+  .panel-header { padding: 0.6rem 1.1rem; border-bottom: 1px solid var(--panel-border); display: flex; align-items: center; gap: 0.75rem; }
+  .panel-label { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: var(--burgundy); text-transform: uppercase; letter-spacing: 0.15em; }
+  .panel-label-secondary { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-muted); margin-left: auto; }
+  .panel-body { padding: 1.2rem 1.1rem; }
+
+  .main-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+  .col-span-2 { grid-column: span 2; }
+  .col-span-3 { grid-column: span 3; }
+
+  .bio-name { font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.02em; animation: glitch 5s infinite; }
+  .bio-name .accent { color: var(--burgundy); text-shadow: 0 0 20px rgba(255,0,255,0.5); }
+  @keyframes glitch { 0%,90%,100%{transform:translate(0)} 91%{transform:translate(-3px,1px)} 93%{transform:translate(3px,-1px)} 95%{transform:translate(0)} }
+  .bio-role { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; color: var(--neon-magenta); text-transform: uppercase; letter-spacing: 0.2em; margin: 0.6rem 0; }
+  .bio-text { font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; }
+  .bio-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .bio-tag { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--burgundy); border: 1px solid rgba(212,0,255,0.288); padding: 2px 9px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .spotify-viewer-msg { font-family: 'Share Tech Mono', monospace; font-size: 0.68rem; color: var(--text-muted); line-height: 1.8; }
+  .spotify-auth-btn { display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; padding: 0.5rem 1rem; cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.2s; }
+  .spotify-auth-btn:hover { background: rgba(57,255,20,0.1); box-shadow: 0 0 15px rgba(57,255,20,0.3); }
+  .spotify-note { font-family: 'Share Tech Mono', monospace; font-size: 0.58rem; color: var(--text-muted); margin-top: 0.6rem; line-height: 1.7; }
+  @keyframes eq { from{transform:scaleY(0.3)} to{transform:scaleY(1)} }
+  .equalizer { display: flex; align-items: flex-end; gap: 2px; height: 16px; }
+  .eq-bar { width: 3px; background: var(--burgundy); border-radius: 1px; animation: eq 0.6s ease-in-out infinite alternate; }
+  .eq-bar:nth-child(1){height:6px;animation-delay:0s}.eq-bar:nth-child(2){height:13px;animation-delay:0.1s}.eq-bar:nth-child(3){height:8px;animation-delay:0.2s}.eq-bar:nth-child(4){height:15px;animation-delay:0.3s}.eq-bar:nth-child(5){height:5px;animation-delay:0.15s}
+
+  .mood-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 100px); gap: 5px; }
+  .mood-cell { background: var(--panel-border); position: relative; overflow: hidden; border: 1px solid transparent; transition: border-color 0.2s; }
+  .mood-cell:hover { border-color: var(--burgundy); }
+  .mood-cell:first-child { grid-row: span 2; }
+  .mood-cell img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.75) contrast(1.1); transition: filter 0.3s; }
+  .mood-cell:hover img { filter: brightness(0.95) contrast(1.2) hue-rotate(10deg); }
+  .mood-cell-empty { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0.2; font-size: 1.2rem; color: var(--burgundy); }
+  .mood-upload-btn { display: none; align-items: center; gap: 0.5rem; background: transparent; border: 1px dashed rgba(0,245,255,0.25); color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 0.63rem; padding: 0.45rem 1rem; cursor: pointer; width: 100%; justify-content: center; margin-top: 0.6rem; letter-spacing: 0.1em; transition: all 0.2s; }
+  .mood-upload-btn:hover { border-color: var(--burgundy); color: var(--burgundy); }
+
+  .projects-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.9rem; }
+  .project-card { border: 1px solid var(--panel-border); padding: 1rem; position: relative; transition: border-color 0.2s, transform 0.2s; background: rgba(10,10,20,0.5); }
+  .project-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--neon-magenta), transparent); opacity: 0; transition: opacity 0.2s; }
+  .project-card:hover { border-color: rgba(128,0,32,0.6); transform: translateY(-2px); }
+  .project-card:hover::after { opacity: 1; }
+  .project-number { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--neon-magenta); letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+  .project-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.3rem; }
+  .project-desc { font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.6rem; }
+  .project-stack { display: flex; flex-wrap: wrap; gap: 3px; }
+  .stack-tag { font-family: 'Share Tech Mono', monospace; font-size: 0.55rem; color: var(--burgundy); border: 1px solid rgba(128,0,32,0.35); padding: 2px 6px; }
+  .project-rm { position: absolute; top: 0.8rem; right: 0.8rem; background: none; border: none; color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; cursor: pointer; display: none; transition: color 0.2s; }
+  .project-rm:hover { color: var(--neon-magenta); }
+  .add-project-btn { width: 100%; min-height: 110px; background: transparent; border: 1px dashed rgba(128,0,32,0.3); color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 0.63rem; letter-spacing: 0.1em; cursor: pointer; transition: all 0.2s; display: none; align-items: center; justify-content: center; gap: 0.5rem; }
+  .add-project-btn:hover { border-color: var(--burgundy); color: var(--burgundy); background: rgba(128,0,32,0.05); }
+
+  .sys-stat-label { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-muted); margin-bottom: 3px; }
+  .sys-stat-val { font-family: 'Orbitron', monospace; font-size: 1.4rem; font-weight: 900; }
+
+  .site-footer { border-top: 1px solid var(--panel-border); padding: 1.2rem 0; margin-top: 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .footer-mono { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-muted); letter-spacing: 0.1em; }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 2000; display: none; align-items: center; justify-content: center; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--panel-bg); border: 1px solid var(--burgundy); max-width: 380px; width: 90%; padding: 1.8rem; position: relative; box-shadow: 0 0 40px rgba(128,0,32,0.2); }
+  .modal-title { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: var(--burgundy); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1.2rem; }
+  .modal-field { margin-bottom: 0.85rem; }
+  .modal-label { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-muted); letter-spacing: 0.1em; display: block; margin-bottom: 4px; }
+  .modal-input { width: 100%; background: var(--dark-bg); border: 1px solid var(--panel-border); color: var(--text-primary); font-family: 'Share Tech Mono', monospace; font-size: 0.78rem; padding: 0.5rem 0.7rem; outline: none; transition: border-color 0.2s; }
+  .modal-input:focus { border-color: var(--burgundy); }
+  .modal-input::placeholder { color: var(--text-muted); }
+  .modal-error { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: #ff4444; margin-top: 0.4rem; display: none; }
+  .modal-actions { display: flex; gap: 0.6rem; margin-top: 1.2rem; justify-content: flex-end; }
+  .btn-cancel { background: transparent; border: 1px solid var(--panel-border); color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; padding: 0.45rem 0.9rem; cursor: pointer; letter-spacing: 0.08em; text-transform: uppercase; }
+  .btn-submit { background: rgba(128,0,32,0.1); border: 1px solid var(--burgundy); color: var(--burgundy); font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; padding: 0.45rem 0.9rem; cursor: pointer; letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.2s; }
+  .btn-submit:hover { background: rgba(128,0,32,0.22); }
+  .modal-close { position: absolute; top: 0.9rem; right: 0.9rem; background: none; border: none; color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; cursor: pointer; }
+
+  @keyframes prog { from{width:20%} to{width:85%} }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--dark-bg); }
+  ::-webkit-scrollbar-thumb { background: var(--panel-border); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--burgundy); }
+  @media (max-width: 800px) { .main-grid { grid-template-columns: 1fr 1fr; } .col-span-3 { grid-column: span 2; } }
+  @media (max-width: 540px) { .main-grid { grid-template-columns: 1fr; } .col-span-2,.col-span-3 { grid-column: span 1; } .projects-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- OWNER LOGIN MODAL -->
+<div class="modal-backdrop" id="ownerModal">
+  <div class="modal">
+    <div class="modal-title">// owner_auth</div>
+    <button class="modal-close" onclick="closeOwnerModal()">[ X ]</button>
+    <div class="modal-field">
+      <label class="modal-label">password</label>
+      <input class="modal-input" id="ownerPass" type="password" placeholder="enter your password" autocomplete="off">
+      <div class="modal-error" id="ownerError">ERR: incorrect password</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeOwnerModal()">cancel</button>
+      <button class="btn-submit" onclick="submitOwnerAuth()">authenticate</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PROJECT MODAL -->
+<div class="modal-backdrop" id="projectModal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-title">// add_project</div>
+    <button class="modal-close" onclick="closeProjModal()">[ X ]</button>
+    <div class="modal-field"><label class="modal-label">project_name</label><input class="modal-input" id="projName" placeholder="my-cool-thing"></div>
+    <div class="modal-field"><label class="modal-label">description</label><input class="modal-input" id="projDesc" placeholder="a short description..."></div>
+    <div class="modal-field"><label class="modal-label">stack (comma separated)</label><input class="modal-input" id="projStack" placeholder="react, node, postgres"></div>
+    <div class="modal-field"><label class="modal-label">link (optional)</label><input class="modal-input" id="projLink" placeholder="https://" type="url"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeProjModal()">cancel</button>
+      <button class="btn-submit" onclick="saveProject()">add_project</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <header class="site-header">
+    <div class="site-logo">// personal<span>_hub</span></div>
+    <div class="header-right">
+      <div class="header-status"><span class="status-dot"></span><span>SYSTEM_ONLINE</span></div>
+      <button class="owner-btn" id="ownerBtn" onclick="handleOwnerBtn()">⚿ owner</button>
+    </div>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- BIO -->
+    <div class="panel col-span-2">
+      <div class="panel-header"><span class="panel-label">// id.profile</span><span class="panel-label-secondary">v2.4.1</span></div>
+      <div class="panel-body">
+        <div class="bio-name">ATHEN <br><span class="accent">GORDON</span></div>
+        <div class="bio-role">// I like cheese &amp; I love cinnamon rolls.</div>
+        <p class="bio-text">Engineering Student // Bored Artist // (maybe) Aspiring Game Developer</p>
+        <div class="bio-tags">
+          <span class="bio-tag">code</span>
+          <span class="bio-tag">ART</span>
+          <span class="bio-tag">Engineering Projects</span>
+          <span class="bio-tag">Mee</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPOTIFY -->
+    <div class="panel">
+      <div class="panel-header"><span class="panel-label">// now_playing</span><span class="panel-label-secondary" id="spStatus">offline</span></div>
+      <div class="panel-body">
+        <div id="spOwnerConnect" style="display:none;flex-direction:column;gap:0.6rem;">
+          <p class="spotify-viewer-msg" style="margin-bottom:0.5rem;">connect your spotify account.</p>
+          <button class="spotify-auth-btn" onclick="startSpotifyAuth()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12a4 4 0 0 1 8 0"/><path d="M6 9a7 7 0 0 1 12 0"/></svg>
+            connect_spotify
+          </button>
+          <p class="spotify-note">set CLIENT_ID in SPOTIFY_CONFIG in the script</p>
+        </div>
+        <div id="spViewerOffline">
+          <p class="spotify-viewer-msg">// nothing playing right now.<br>check back later.</p>
+        </div>
+        <div id="spPlaying" style="display:none;">
+          <div style="display:flex;gap:0.8rem;align-items:center;">
+            <div id="spArt" style="width:56px;height:56px;border:1px solid var(--burgundy);background:linear-gradient(135deg,#1a0010,#200010);flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--burgundy)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div id="spTrack" style="font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.9rem;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+              <div id="spArtist" style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--text-muted);margin-top:2px;">—</div>
+              <div style="margin-top:0.5rem;height:2px;background:var(--panel-border);overflow:hidden;"><div style="height:100%;background:linear-gradient(90deg,var(--burgundy),var(--neon-magenta));animation:prog 3s linear infinite;"></div></div>
+            </div>
+            <div class="equalizer"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOOD BOARD -->
+    <div class="panel col-span-2">
+      <div class="panel-header"><span class="panel-label">// mood.board</span><span class="panel-label-secondary" id="moodCount">0 images</span></div>
+      <div class="panel-body">
+        <div class="mood-grid" id="moodGrid"></div>
+        <button class="mood-upload-btn" id="moodUploadBtn" onclick="document.getElementById('moodInput').click()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          add_image
+        </button>
+        <input type="file" id="moodInput" accept="image/*" multiple style="display:none;" onchange="handleMood(event)">
+      </div>
+    </div>
+
+    <!-- SYS STATS -->
+    <div class="panel">
+      <div class="panel-header"><span class="panel-label">// sys.stats</span></div>
+      <div class="panel-body" style="display:flex;flex-direction:column;gap:0.85rem;">
+        <div><div class="sys-stat-label">projects_live</div><div class="sys-stat-val" style="color:var(--burgundy);text-shadow:0 0 15px rgba(128,0,32,0.5);" id="statP">2</div></div>
+        <div><div class="sys-stat-label">mood_frames</div><div class="sys-stat-val" style="color:var(--neon-magenta);text-shadow:0 0 15px rgba(255,0,200,0.4);" id="statM">0</div></div>
+        <div><div class="sys-stat-label">uptime</div><div style="font-family:'Orbitron',monospace;font-size:0.95rem;font-weight:700;color:var(--neon-green);" id="uptime">00:00:00</div></div>
+        <div id="ownerBadge" style="display:none;padding:4px 8px;border:1px solid rgba(255,0,200,0.35);background:rgba(255,0,200,0.06);">
+          <span style="font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--neon-magenta);letter-spacing:0.1em;">⚿ OWNER MODE ON</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="panel col-span-3">
+      <div class="panel-header">
+        <span class="panel-label">// project.gallery</span>
+        <button id="newProjBtn" onclick="openProjModal()" style="display:none;margin-left:auto;background:transparent;border:1px solid rgba(128,0,32,0.4);color:var(--burgundy);font-family:'Share Tech Mono',monospace;font-size:0.58rem;padding:3px 9px;cursor:pointer;letter-spacing:0.08em;text-transform:uppercase;">+ new</button>
+      </div>
+      <div class="panel-body">
+        <div class="projects-grid" id="projectsGrid"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="site-footer">
+    <span class="footer-mono">// built with: html + css + js + vibes</span>
+    <span class="footer-mono" id="footerTime"></span>
+  </footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONFIG — Spotify only. Password lives on the server.
+// ═══════════════════════════════════════════════════════
+const SPOTIFY_CONFIG = {
+  clientId:    'YOUR_CLIENT_ID_HERE',
+  redirectUri: window.location.origin + window.location.pathname,
+  scopes:      'user-read-currently-playing user-read-recently-played'
+};
+// ═══════════════════════════════════════════════════════
+
+// ── OWNER AUTH ──
+let isOwner = false;
+
+function setOwnerUI(on) {
+  document.getElementById('ownerBadge').style.display    = on ? 'block' : 'none';
+  document.getElementById('moodUploadBtn').style.display = on ? 'flex'  : 'none';
+  document.getElementById('newProjBtn').style.display    = on ? 'inline-block' : 'none';
+  document.getElementById('ownerBtn').classList.toggle('active', on);
+  document.getElementById('ownerBtn').textContent        = on ? '⚿ owner ✓' : '⚿ owner';
+  document.querySelectorAll('.project-rm').forEach(b => b.style.display = on ? 'block' : 'none');
+  document.querySelectorAll('.add-project-btn').forEach(b => b.style.display = on ? 'flex' : 'none');
+  const hasToken = !!localStorage.getItem('spotify_token');
+  if (on && !hasToken) {
+    document.getElementById('spOwnerConnect').style.display = 'flex';
+    document.getElementById('spViewerOffline').style.display = 'none';
+  }
+  if (!on && !hasToken) {
+    document.getElementById('spOwnerConnect').style.display = 'none';
+    document.getElementById('spViewerOffline').style.display = 'block';
+  }
+  renderMood();
+}
+
+function handleOwnerBtn() {
+  if (isOwner) {
+    fetch('/api/owner/logout', { method: 'POST' }).finally(() => {
+      isOwner = false;
+      setOwnerUI(false);
+    });
+  } else {
+    openOwnerModal();
+  }
+}
+
+function openOwnerModal() {
+  document.getElementById('ownerModal').classList.add('open');
+  document.getElementById('ownerPass').value = '';
+  document.getElementById('ownerError').style.display = 'none';
+  setTimeout(() => document.getElementById('ownerPass').focus(), 50);
+}
+function closeOwnerModal() { document.getElementById('ownerModal').classList.remove('open'); }
+
+async function submitOwnerAuth() {
+  const password = document.getElementById('ownerPass').value;
+  const errEl = document.getElementById('ownerError');
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch('/api/owner/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+    if (res.ok) {
+      isOwner = true;
+      closeOwnerModal();
+      setOwnerUI(true);
+    } else {
+      errEl.style.display = 'block';
+      document.getElementById('ownerPass').value = '';
+      document.getElementById('ownerPass').focus();
+    }
+  } catch {
+    errEl.textContent = 'ERR: could not reach server';
+    errEl.style.display = 'block';
+  }
+}
+
+document.getElementById('ownerModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeOwnerModal(); });
+document.getElementById('ownerPass').addEventListener('keydown', e => { if (e.key === 'Enter') submitOwnerAuth(); if (e.key === 'Escape') closeOwnerModal(); });
+
+// ── CLOCK ──
+const t0 = Date.now();
+setInterval(() => {
+  const e = Date.now()-t0, h = Math.floor(e/3600000), m = Math.floor((e%3600000)/60000), s = Math.floor((e%60000)/1000);
+  document.getElementById('uptime').textContent = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}, 1000);
+function tickFooter() { document.getElementById('footerTime').textContent = '// '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+tickFooter(); setInterval(tickFooter, 1000);
+
+// ── SPOTIFY PKCE ──
+function b64url(a) { return btoa(String.fromCharCode(...new Uint8Array(a))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,''); }
+function randStr(n) { const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; return Array.from(crypto.getRandomValues(new Uint8Array(n))).map(x=>c[x%c.length]).join(''); }
+async function sha256(s) { return crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); }
+
+async function startSpotifyAuth() {
+  if (!SPOTIFY_CONFIG.clientId || SPOTIFY_CONFIG.clientId === 'YOUR_CLIENT_ID_HERE') { alert('Set your Spotify CLIENT_ID in SPOTIFY_CONFIG first.'); return; }
+  const v = randStr(64), ch = b64url(await sha256(v));
+  sessionStorage.setItem('sp_verifier', v);
+  const p = new URLSearchParams({ client_id: SPOTIFY_CONFIG.clientId, response_type: 'code', redirect_uri: SPOTIFY_CONFIG.redirectUri, code_challenge_method: 'S256', code_challenge: ch, scope: SPOTIFY_CONFIG.scopes });
+  window.location.href = 'https://accounts.spotify.com/authorize?' + p.toString();
+}
+
+async function exchangeCode(code) {
+  const r = await fetch('https://accounts.spotify.com/api/token', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: new URLSearchParams({ client_id: SPOTIFY_CONFIG.clientId, grant_type:'authorization_code', code, redirect_uri: SPOTIFY_CONFIG.redirectUri, code_verifier: sessionStorage.getItem('sp_verifier') }) });
+  const d = await r.json();
+  if (d.access_token) { localStorage.setItem('spotify_token', d.access_token); localStorage.setItem('spotify_expires', Date.now()+d.expires_in*1000); if(d.refresh_token) localStorage.setItem('spotify_refresh', d.refresh_token); window.history.replaceState({}, '', window.location.pathname); return d.access_token; }
+  return null;
+}
+
+async function refreshToken() {
+  const ref = localStorage.getItem('spotify_refresh'); if (!ref) return null;
+  const r = await fetch('https://accounts.spotify.com/api/token', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: new URLSearchParams({ client_id: SPOTIFY_CONFIG.clientId, grant_type:'refresh_token', refresh_token: ref }) });
+  const d = await r.json();
+  if (d.access_token) { localStorage.setItem('spotify_token', d.access_token); localStorage.setItem('spotify_expires', Date.now()+d.expires_in*1000); return d.access_token; }
+  return null;
+}
+
+async function getToken() {
+  const exp = parseInt(localStorage.getItem('spotify_expires')||'0');
+  return Date.now() > exp-60000 ? await refreshToken() : localStorage.getItem('spotify_token');
+}
+
+function showPlaying(data) {
+  const track = data.item;
+  document.getElementById('spViewerOffline').style.display = 'none';
+  document.getElementById('spOwnerConnect').style.display = 'none';
+  document.getElementById('spPlaying').style.display = 'block';
+  document.getElementById('spTrack').textContent = track.name;
+  document.getElementById('spArtist').textContent = track.artists.map(a=>a.name).join(', ');
+  if (track.album.images.length) document.getElementById('spArt').innerHTML = '<img src="'+track.album.images[track.album.images.length-1].url+'" style="width:56px;height:56px;object-fit:cover;">';
+  document.getElementById('spStatus').textContent = 'live';
+  document.getElementById('spStatus').style.color = 'var(--neon-green)';
+}
+
+async function initSpotify() {
+  const code = new URLSearchParams(window.location.search).get('code');
+  let token = code ? await exchangeCode(code) : await getToken();
+  if (!token) { setOwnerUI(isOwner); return; }
+  document.getElementById('spOwnerConnect').style.display = 'none';
+  try {
+    const r = await fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers:{ Authorization:'Bearer '+token } });
+    if (r.status === 200) { const d = await r.json(); if (d && d.is_playing) { showPlaying(d); setInterval(async()=>{ const t=await getToken(); if(t){const r2=await fetch('https://api.spotify.com/v1/me/player/currently-playing',{headers:{Authorization:'Bearer '+t}});if(r2.status===200){const d2=await r2.json();if(d2&&d2.is_playing)showPlaying(d2);}} }, 30000); return; } }
+    document.getElementById('spViewerOffline').style.display = 'block';
+  } catch(e) { document.getElementById('spViewerOffline').style.display = 'block'; }
+}
+
+// ── MOOD BOARD ──
+let moodImages = JSON.parse(localStorage.getItem('moodImages') || '[]');
+function renderMood() {
+  const g = document.getElementById('moodGrid'); g.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const c = document.createElement('div'); c.className = 'mood-cell';
+    if (i === 0) c.style.gridRow = 'span 2';
+    if (moodImages[i]) {
+      c.innerHTML = '<img src="'+moodImages[i]+'" alt="">';
+      if (isOwner) {
+        c.style.cursor = 'pointer'; c.title = 'Click to remove';
+        c.onclick = (idx => () => { moodImages.splice(idx,1); localStorage.setItem('moodImages', JSON.stringify(moodImages)); renderMood(); })(i);
+      }
+    } else {
+      c.innerHTML = '<div class="mood-cell-empty">+</div>';
+    }
+    g.appendChild(c);
+  }
+  const n = moodImages.length;
+  document.getElementById('moodCount').textContent = n+' image'+(n!==1?'s':'');
+  document.getElementById('statM').textContent = n;
+}
+function handleMood(e) {
+  Array.from(e.target.files).forEach(f => {
+    if (moodImages.length >= 6) return;
+    const r = new FileReader();
+    r.onload = ev => { moodImages.push(ev.target.result); localStorage.setItem('moodImages', JSON.stringify(moodImages)); renderMood(); };
+    r.readAsDataURL(f);
+  });
+  e.target.value = '';
+}
+
+// ── PROJECTS ──
+let projects = JSON.parse(localStorage.getItem('projects') || 'null') || [
+  { name:'Art Projects', desc:"All the art projects I've worked on.", stack:['Fanart','Watercolor','Originals'], link:'' },
+  { name:'Engineering',  desc:"All the Engineering projects I've worked on at MNTC.", stack:['VEXCode','VEX Robotics','BattleBots (none done yet)'], link:'' }
+];
+function saveProjects() { localStorage.setItem('projects', JSON.stringify(projects)); }
+function renderProjects() {
+  const g = document.getElementById('projectsGrid'); g.innerHTML = '';
+  projects.forEach((p, i) => {
+    const c = document.createElement('div'); c.className = 'project-card';
+    c.innerHTML =
+      '<button class="project-rm" onclick="removeProject(event,'+i+')">✕ rm</button>'+
+      '<div class="project-number">proj_'+String(i+1).padStart(3,'0')+'</div>'+
+      '<div class="project-name">'+p.name+'</div>'+
+      '<div class="project-desc">'+p.desc+'</div>'+
+      '<div class="project-stack">'+p.stack.map(t=>'<span class="stack-tag">'+t+'</span>').join('')+'</div>'+
+      (p.link?'<a href="'+p.link+'" target="_blank" style="font-family:\'Share Tech Mono\',monospace;font-size:0.6rem;color:var(--burgundy);text-decoration:none;display:inline-block;margin-top:0.5rem;">↗ visit</a>':'');
+    g.appendChild(c);
+  });
+  const add = document.createElement('button'); add.className = 'add-project-btn'; add.onclick = openProjModal;
+  add.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> add_project';
+  g.appendChild(add);
+  document.getElementById('statP').textContent = projects.length;
+  document.querySelectorAll('.project-rm').forEach(b => b.style.display = isOwner ? 'block' : 'none');
+  document.querySelectorAll('.add-project-btn').forEach(b => b.style.display = isOwner ? 'flex' : 'none');
+}
+function removeProject(e, i) { e.stopPropagation(); projects.splice(i,1); saveProjects(); renderProjects(); }
+function openProjModal() { document.getElementById('projectModal').classList.add('open'); setTimeout(()=>document.getElementById('projName').focus(),50); }
+function closeProjModal() { document.getElementById('projectModal').classList.remove('open'); ['projName','projDesc','projStack','projLink'].forEach(id=>document.getElementById(id).value=''); }
+function saveProject() {
+  const name = document.getElementById('projName').value.trim(); if (!name) return;
+  projects.push({ name, desc: document.getElementById('projDesc').value.trim()||'no description.', stack: document.getElementById('projStack').value.split(',').map(s=>s.trim()).filter(Boolean), link: document.getElementById('projLink').value.trim() });
+  saveProjects(); renderProjects(); closeProjModal();
+}
+document.getElementById('projectModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeProjModal(); });
+
+// ── INIT ──
+async function checkOwnerSession() {
+  try {
+    const res = await fetch('/api/owner/check');
+    isOwner = res.ok;
+  } catch {
+    isOwner = false;
+  }
+  renderMood();
+  renderProjects();
+  setOwnerUI(isOwner);
+  initSpotify();
+}
+
+checkOwnerSession();
+</script>
+</body>
+</html>
