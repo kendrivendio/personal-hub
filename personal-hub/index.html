@@ -341,27 +341,39 @@ function showPlaying(track, isNowPlaying) {
   document.getElementById('spStatus').style.color = isNowPlaying ? 'var(--neon-green)' : 'var(--text-muted)';
 }
  
+async function fetchAndRender() {
+  const url = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${LASTFM_CONFIG.username}&api_key=${LASTFM_CONFIG.apiKey}&format=json&limit=1`;
+  const r = await fetch(url);
+  const d = await r.json();
+  const tracks = d.recenttracks?.track;
+  if (!tracks || tracks.length === 0) {
+    document.getElementById('spViewerOffline').style.display = 'block';
+    document.getElementById('spPlaying').style.display = 'none';
+    return;
+  }
+  const latest = Array.isArray(tracks) ? tracks[0] : tracks;
+  const isNowPlaying = latest['@attr']?.nowplaying === 'true';
+ 
+  if (!isNowPlaying) {
+    // Check how long ago it was scrobbled — if over 10 mins, assume stopped
+    const scrobbledAt = parseInt(latest.date?.uts || '0') * 1000;
+    const minutesAgo = (Date.now() - scrobbledAt) / 60000;
+    if (minutesAgo > 3) {
+      document.getElementById('spViewerOffline').style.display = 'block';
+      document.getElementById('spPlaying').style.display = 'none';
+      document.getElementById('spStatus').textContent = 'offline';
+      document.getElementById('spStatus').style.color = 'var(--text-muted)';
+      return;
+    }
+  }
+ 
+  showPlaying(latest, isNowPlaying);
+}
+ 
 async function initLastFm() {
   try {
-    const url = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${LASTFM_CONFIG.username}&api_key=${LASTFM_CONFIG.apiKey}&format=json&limit=1`;
-    const r = await fetch(url);
-    const d = await r.json();
-    const tracks = d.recenttracks?.track;
-    if (!tracks || tracks.length === 0) return;
-    const latest = Array.isArray(tracks) ? tracks[0] : tracks;
-    const isNowPlaying = latest['@attr']?.nowplaying === 'true';
-    showPlaying(latest, isNowPlaying);
-    // Poll every 30 seconds
-    setInterval(async () => {
-      try {
-        const r2 = await fetch(url);
-        const d2 = await r2.json();
-        const t2 = d2.recenttracks?.track;
-        if (!t2) return;
-        const latest2 = Array.isArray(t2) ? t2[0] : t2;
-        showPlaying(latest2, latest2['@attr']?.nowplaying === 'true');
-      } catch {}
-    }, 30000);
+    await fetchAndRender();
+    setInterval(async () => { try { await fetchAndRender(); } catch {} }, 30000);
   } catch(e) {
     document.getElementById('spViewerOffline').style.display = 'block';
   }
@@ -456,3 +468,4 @@ checkOwnerSession();
 </script>
 </body>
 </html>
+ 
