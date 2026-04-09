@@ -446,15 +446,12 @@ async function checkOwnerSession() {
   renderMood();
   renderProjects();
   setOwnerUI(isOwner);
-  initLastFm();
 }
  
+// Start Last.fm immediately — doesn't need owner check
+initLastFm();
 checkOwnerSession();
-</script>
-</body>
-</html>
  
-
 checkOwnerSession();
 </script>
 </body>
