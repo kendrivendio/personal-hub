@@ -1,7 +1,24 @@
 {
   "rewrites": [
-    { "source": "/api/owner/login",  "destination": "/api/owner/login"  },
-    { "source": "/api/owner/check",  "destination": "/api/owner/check"  },
-    { "source": "/api/owner/logout", "destination": "/api/owner/logout" }
+    {
+      "source": "/api/owner/login",
+      "destination": "/api/owner/login"
+    },
+    {
+      "source": "/api/owner/check",
+      "destination": "/api/owner/check"
+    },
+    {
+      "source": "/api/owner/logout",
+      "destination": "/api/owner/logout"
+    },
+    {
+      "source": "/api/images/upload",
+      "destination": "/api/images/upload"
+    },
+    {
+      "source": "/api/images/delete",
+      "destination": "/api/images/delete"
+    }
   ]
 }
