@@ -358,7 +358,7 @@ async function fetchAndRender() {
     // Check how long ago it was scrobbled — if over 10 mins, assume stopped
     const scrobbledAt = parseInt(latest.date?.uts || '0') * 1000;
     const minutesAgo = (Date.now() - scrobbledAt) / 60000;
-    if (minutesAgo > 3) {
+    if (minutesAgo > 10) {
       document.getElementById('spViewerOffline').style.display = 'block';
       document.getElementById('spPlaying').style.display = 'none';
       document.getElementById('spStatus').textContent = 'offline';
@@ -380,17 +380,40 @@ async function initLastFm() {
 }
  
 // ── MOOD BOARD ──
-let moodImages = JSON.parse(localStorage.getItem('moodImages') || '[]');
+let moodImages = []; // [{ url, publicId }]
+ 
+async function loadMoodImages() {
+  // Store URLs in localStorage as a cache — visible to everyone on load
+  const cached = localStorage.getItem('moodImages_v2');
+  if (cached) moodImages = JSON.parse(cached);
+  renderMood();
+}
+ 
+function saveMoodCache() {
+  localStorage.setItem('moodImages_v2', JSON.stringify(moodImages));
+}
+ 
 function renderMood() {
   const g = document.getElementById('moodGrid'); g.innerHTML = '';
   for (let i = 0; i < 6; i++) {
     const c = document.createElement('div'); c.className = 'mood-cell';
     if (i === 0) c.style.gridRow = 'span 2';
     if (moodImages[i]) {
-      c.innerHTML = '<img src="'+moodImages[i]+'" alt="">';
+      c.innerHTML = '<img src="'+moodImages[i].url+'" alt="">';
       if (isOwner) {
         c.style.cursor = 'pointer'; c.title = 'Click to remove';
-        c.onclick = (idx => () => { moodImages.splice(idx,1); localStorage.setItem('moodImages', JSON.stringify(moodImages)); renderMood(); })(i);
+        c.onclick = (idx => async () => {
+          const item = moodImages[idx];
+          // Delete from Cloudinary
+          await fetch('/api/images/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ publicId: item.publicId })
+          });
+          moodImages.splice(idx, 1);
+          saveMoodCache();
+          renderMood();
+        })(i);
       }
     } else {
       c.innerHTML = '<div class="mood-cell-empty">+</div>';
@@ -401,12 +424,38 @@ function renderMood() {
   document.getElementById('moodCount').textContent = n+' image'+(n!==1?'s':'');
   document.getElementById('statM').textContent = n;
 }
+ 
 function handleMood(e) {
   Array.from(e.target.files).forEach(f => {
     if (moodImages.length >= 6) return;
-    const r = new FileReader();
-    r.onload = ev => { moodImages.push(ev.target.result); localStorage.setItem('moodImages', JSON.stringify(moodImages)); renderMood(); };
-    r.readAsDataURL(f);
+    const reader = new FileReader();
+    reader.onload = async ev => {
+      const base64 = ev.target.result;
+      // Show optimistic placeholder while uploading
+      const tempId = 'uploading_' + Date.now();
+      moodImages.push({ url: base64, publicId: tempId });
+      renderMood();
+      try {
+        const res = await fetch('/api/images/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64 })
+        });
+        const data = await res.json();
+        if (data.url) {
+          // Replace temp entry with real Cloudinary URL
+          const idx = moodImages.findIndex(m => m.publicId === tempId);
+          if (idx !== -1) moodImages[idx] = { url: data.url, publicId: data.publicId };
+          saveMoodCache();
+          renderMood();
+        }
+      } catch(err) {
+        // Remove failed upload
+        moodImages = moodImages.filter(m => m.publicId !== tempId);
+        renderMood();
+      }
+    };
+    reader.readAsDataURL(f);
   });
   e.target.value = '';
 }
@@ -455,7 +504,7 @@ async function checkOwnerSession() {
   } catch {
     isOwner = false;
   }
-  renderMood();
+  await loadMoodImages();
   renderProjects();
   setOwnerUI(isOwner);
 }
