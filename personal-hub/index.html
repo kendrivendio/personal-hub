@@ -62,13 +62,18 @@
   .eq-bar { width: 3px; background: var(--burgundy); border-radius: 1px; animation: eq 0.6s ease-in-out infinite alternate; }
   .eq-bar:nth-child(1){height:6px;animation-delay:0s}.eq-bar:nth-child(2){height:13px;animation-delay:0.1s}.eq-bar:nth-child(3){height:8px;animation-delay:0.2s}.eq-bar:nth-child(4){height:15px;animation-delay:0.3s}.eq-bar:nth-child(5){height:5px;animation-delay:0.15s}
  
-  .mood-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 100px); gap: 5px; }
+  .mood-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; grid-auto-rows: 90px; }
   .mood-cell { background: var(--panel-border); position: relative; overflow: hidden; border: 1px solid transparent; transition: border-color 0.2s; }
   .mood-cell:hover { border-color: var(--burgundy); }
-  .mood-cell:first-child { grid-row: span 2; }
   .mood-cell img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.75) contrast(1.1); transition: filter 0.3s; }
   .mood-cell:hover img { filter: brightness(0.95) contrast(1.2) hue-rotate(10deg); }
   .mood-cell-empty { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0.2; font-size: 1.2rem; color: var(--burgundy); }
+  .mood-cell .resize-controls { display: none; position: absolute; bottom: 4px; right: 4px; z-index: 10; gap: 3px; }
+  .mood-cell.owner-cell .resize-controls { display: flex; }
+  .resize-btn { font-family: 'Share Tech Mono', monospace; font-size: 0.5rem; background: rgba(0,0,0,0.8); border: 1px solid var(--burgundy); color: var(--burgundy); padding: 2px 4px; cursor: pointer; line-height: 1.4; transition: all 0.15s; }
+  .resize-btn:hover { background: rgba(128,0,32,0.4); }
+  .mood-cell .rm-btn { display: none; position: absolute; top: 4px; right: 4px; z-index: 10; font-family: 'Share Tech Mono', monospace; font-size: 0.5rem; background: rgba(0,0,0,0.8); border: 1px solid var(--neon-magenta); color: var(--neon-magenta); padding: 2px 4px; cursor: pointer; line-height: 1.4; }
+  .mood-cell.owner-cell .rm-btn { display: block; }
   .mood-upload-btn { display: none; align-items: center; gap: 0.5rem; background: transparent; border: 1px dashed rgba(0,245,255,0.25); color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 0.63rem; padding: 0.45rem 1rem; cursor: pointer; width: 100%; justify-content: center; margin-top: 0.6rem; letter-spacing: 0.1em; transition: all 0.2s; }
   .mood-upload-btn:hover { border-color: var(--burgundy); color: var(--burgundy); }
  
@@ -380,46 +385,61 @@ async function initLastFm() {
 }
  
 // ── MOOD BOARD ──
-let moodImages = []; // [{ url, publicId }]
+// moodImages: [{ url, publicId, cols, rows }]
+// cols: 1-6 (out of 6 grid columns), rows: 1-2
+let moodImages = [];
  
 async function loadMoodImages() {
-  // Store URLs in localStorage as a cache — visible to everyone on load
-  const cached = localStorage.getItem('moodImages_v2');
+  const cached = localStorage.getItem('moodImages_v3');
   if (cached) moodImages = JSON.parse(cached);
   renderMood();
 }
  
 function saveMoodCache() {
-  localStorage.setItem('moodImages_v2', JSON.stringify(moodImages));
+  localStorage.setItem('moodImages_v3', JSON.stringify(moodImages));
 }
  
 function renderMood() {
   const g = document.getElementById('moodGrid'); g.innerHTML = '';
-  for (let i = 0; i < 6; i++) {
-    const c = document.createElement('div'); c.className = 'mood-cell';
-    if (i === 0) c.style.gridRow = 'span 2';
-    if (moodImages[i]) {
-      c.innerHTML = '<img src="'+moodImages[i].url+'" alt="">';
-      if (isOwner) {
-        c.style.cursor = 'pointer'; c.title = 'Click to remove';
-        c.onclick = (idx => async () => {
-          const item = moodImages[idx];
-          // Delete from Cloudinary
-          await fetch('/api/images/delete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ publicId: item.publicId })
-          });
-          moodImages.splice(idx, 1);
-          saveMoodCache();
-          renderMood();
-        })(i);
-      }
-    } else {
-      c.innerHTML = '<div class="mood-cell-empty">+</div>';
+  moodImages.forEach((img, i) => {
+    const cols = img.cols || 2;
+    const rows = img.rows || 1;
+    const c = document.createElement('div');
+    c.className = 'mood-cell' + (isOwner ? ' owner-cell' : '');
+    c.style.gridColumn = 'span ' + cols;
+    c.style.gridRow = 'span ' + rows;
+    c.innerHTML = '<img src="'+img.url+'" alt="">';
+ 
+    if (isOwner) {
+      // Remove button
+      const rm = document.createElement('button');
+      rm.className = 'rm-btn'; rm.textContent = '✕ rm';
+      rm.onclick = async (e) => {
+        e.stopPropagation();
+        await fetch('/api/images/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ publicId: img.publicId }) });
+        moodImages.splice(i, 1);
+        saveMoodCache(); renderMood();
+      };
+      c.appendChild(rm);
+ 
+      // Resize controls
+      const rc = document.createElement('div'); rc.className = 'resize-controls';
+ 
+      const makeBtn = (label, action) => {
+        const b = document.createElement('button'); b.className = 'resize-btn'; b.textContent = label;
+        b.onclick = (e) => { e.stopPropagation(); action(); saveMoodCache(); renderMood(); };
+        return b;
+      };
+ 
+      rc.appendChild(makeBtn('w+', () => { if(moodImages[i].cols < 6) moodImages[i].cols = (moodImages[i].cols||2)+1; }));
+      rc.appendChild(makeBtn('w-', () => { if(moodImages[i].cols > 1) moodImages[i].cols = (moodImages[i].cols||2)-1; }));
+      rc.appendChild(makeBtn('h+', () => { if(moodImages[i].rows < 3) moodImages[i].rows = (moodImages[i].rows||1)+1; }));
+      rc.appendChild(makeBtn('h-', () => { if(moodImages[i].rows > 1) moodImages[i].rows = (moodImages[i].rows||1)-1; }));
+      c.appendChild(rc);
     }
     g.appendChild(c);
-  }
+  });
+ 
   const n = moodImages.length;
   document.getElementById('moodCount').textContent = n+' image'+(n!==1?'s':'');
   document.getElementById('statM').textContent = n;
@@ -431,9 +451,8 @@ function handleMood(e) {
     const reader = new FileReader();
     reader.onload = async ev => {
       const base64 = ev.target.result;
-      // Show optimistic placeholder while uploading
       const tempId = 'uploading_' + Date.now();
-      moodImages.push({ url: base64, publicId: tempId });
+      moodImages.push({ url: base64, publicId: tempId, cols: 2, rows: 1 });
       renderMood();
       try {
         const res = await fetch('/api/images/upload', {
@@ -443,14 +462,11 @@ function handleMood(e) {
         });
         const data = await res.json();
         if (data.url) {
-          // Replace temp entry with real Cloudinary URL
           const idx = moodImages.findIndex(m => m.publicId === tempId);
-          if (idx !== -1) moodImages[idx] = { url: data.url, publicId: data.publicId };
-          saveMoodCache();
-          renderMood();
+          if (idx !== -1) moodImages[idx] = { ...moodImages[idx], url: data.url, publicId: data.publicId };
+          saveMoodCache(); renderMood();
         }
-      } catch(err) {
-        // Remove failed upload
+      } catch {
         moodImages = moodImages.filter(m => m.publicId !== tempId);
         renderMood();
       }
@@ -514,6 +530,10 @@ initLastFm();
 checkOwnerSession();
  
 checkOwnerSession();
+</script>
+</body>
+</html>
+ 
 </script>
 </body>
 </html>
