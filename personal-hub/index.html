@@ -90,6 +90,16 @@
   .project-rm { position: absolute; top: 0.8rem; right: 0.8rem; background: none; border: none; color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; cursor: pointer; display: none; transition: color 0.2s; }
   .project-rm:hover { color: var(--neon-magenta); }
   .add-project-btn { width: 100%; min-height: 110px; background: transparent; border: 1px dashed rgba(128,0,32,0.3); color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 0.63rem; letter-spacing: 0.1em; cursor: pointer; transition: all 0.2s; display: none; align-items: center; justify-content: center; gap: 0.5rem; }
+  .project-images { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 0.8rem; }
+  .project-img-cell { position: relative; height: 80px; overflow: hidden; border: 1px solid var(--panel-border); cursor: pointer; transition: border-color 0.2s; }
+  .project-img-cell:hover { border-color: var(--burgundy); }
+  .project-img-cell img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.75) contrast(1.1); transition: filter 0.3s; }
+  .project-img-cell:hover img { filter: brightness(0.95) contrast(1.1); }
+  .project-img-rm { display: none; position: absolute; top: 3px; right: 3px; font-family: 'Share Tech Mono', monospace; font-size: 0.48rem; background: rgba(0,0,0,0.8); border: 1px solid var(--neon-magenta); color: var(--neon-magenta); padding: 2px 4px; cursor: pointer; line-height: 1.4; z-index: 5; }
+  .owner-mode .project-img-rm { display: block; }
+  .proj-add-img-btn { height: 80px; background: transparent; border: 1px dashed rgba(128,0,32,0.25); color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 0.55rem; cursor: pointer; transition: all 0.2s; display: none; align-items: center; justify-content: center; letter-spacing: 0.08em; }
+  .proj-add-img-btn:hover { border-color: var(--burgundy); color: var(--burgundy); }
+  .owner-mode .proj-add-img-btn { display: flex; }
   .add-project-btn:hover { border-color: var(--burgundy); color: var(--burgundy); background: rgba(128,0,32,0.05); }
  
   .sys-stat-label { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-muted); margin-bottom: 3px; }
@@ -275,6 +285,7 @@ function setOwnerUI(on) {
   document.getElementById('ownerBtn').textContent        = on ? '⚿ owner ✓' : '⚿ owner';
   document.querySelectorAll('.project-rm').forEach(b => b.style.display = on ? 'block' : 'none');
   document.querySelectorAll('.add-project-btn').forEach(b => b.style.display = on ? 'flex' : 'none');
+  document.body.classList.toggle('owner-mode', on);
   renderMood();
 }
  
@@ -477,22 +488,76 @@ function handleMood(e) {
 }
  
 // ── PROJECTS ──
+// projects: [{ name, desc, stack, link, images: [{url, publicId}] }]
 let projects = JSON.parse(localStorage.getItem('projects') || 'null') || [
-  { name:'Art Projects', desc:"All the art projects I've worked on.", stack:['Fanart','Watercolor','Originals'], link:'' },
-  { name:'Engineering',  desc:"All the Engineering projects I've worked on at MNTC.", stack:['VEXCode','VEX Robotics','BattleBots (none done yet)'], link:'' }
+  { name:'Art Projects', desc:"All the art projects I've worked on.", stack:['Fanart','Watercolor','Originals'], link:'', images:[] },
+  { name:'Engineering',  desc:"All the Engineering projects I've worked on at MNTC.", stack:['VEXCode','VEX Robotics','BattleBots (none done yet)'], link:'', images:[] }
 ];
 function saveProjects() { localStorage.setItem('projects', JSON.stringify(projects)); }
+ 
+function renderProjectImages(card, projIndex) {
+  let imgGrid = card.querySelector('.project-images');
+  if (!imgGrid) { imgGrid = document.createElement('div'); imgGrid.className = 'project-images'; card.appendChild(imgGrid); }
+  imgGrid.innerHTML = '';
+  const imgs = projects[projIndex].images || [];
+  imgs.forEach((img, ii) => {
+    const cell = document.createElement('div'); cell.className = 'project-img-cell';
+    cell.innerHTML = '<img src="'+img.url+'" alt="">';
+    const rmBtn = document.createElement('button'); rmBtn.className = 'project-img-rm'; rmBtn.textContent = '✕';
+    rmBtn.onclick = async (e) => {
+      e.stopPropagation();
+      await fetch('/api/images/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ publicId: img.publicId }) });
+      projects[projIndex].images.splice(ii, 1);
+      saveProjects(); renderProjectImages(card, projIndex);
+    };
+    cell.appendChild(rmBtn);
+    imgGrid.appendChild(cell);
+  });
+  // Add image button — owner only via CSS
+  const addBtn = document.createElement('button'); addBtn.className = 'proj-add-img-btn';
+  addBtn.innerHTML = '+ img';
+  addBtn.onclick = (e) => {
+    e.stopPropagation();
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true;
+    inp.onchange = async (ev) => {
+      for (const f of Array.from(ev.target.files)) {
+        const base64 = await new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(f); });
+        const tempId = 'uploading_'+Date.now();
+        if (!projects[projIndex].images) projects[projIndex].images = [];
+        projects[projIndex].images.push({ url: base64, publicId: tempId });
+        saveProjects(); renderProjectImages(card, projIndex);
+        try {
+          const resp = await fetch('/api/images/upload', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ image: base64 }) });
+          const data = await resp.json();
+          if (data.url) {
+            const idx = projects[projIndex].images.findIndex(m => m.publicId === tempId);
+            if (idx !== -1) projects[projIndex].images[idx] = { url: data.url, publicId: data.publicId };
+            saveProjects(); renderProjectImages(card, projIndex);
+          }
+        } catch { projects[projIndex].images = projects[projIndex].images.filter(m => m.publicId !== tempId); renderProjectImages(card, projIndex); }
+      }
+    };
+    inp.click();
+  };
+  imgGrid.appendChild(addBtn);
+}
+ 
 function renderProjects() {
   const g = document.getElementById('projectsGrid'); g.innerHTML = '';
   projects.forEach((p, i) => {
     const c = document.createElement('div'); c.className = 'project-card';
-    c.innerHTML =
+    // Header info
+    const header = document.createElement('div');
+    header.innerHTML =
       '<button class="project-rm" onclick="removeProject(event,'+i+')">✕ rm</button>'+
       '<div class="project-number">proj_'+String(i+1).padStart(3,'0')+'</div>'+
       '<div class="project-name">'+p.name+'</div>'+
       '<div class="project-desc">'+p.desc+'</div>'+
       '<div class="project-stack">'+p.stack.map(t=>'<span class="stack-tag">'+t+'</span>').join('')+'</div>'+
       (p.link?'<a href="'+p.link+'" target="_blank" style="font-family:\'Share Tech Mono\',monospace;font-size:0.6rem;color:var(--burgundy);text-decoration:none;display:inline-block;margin-top:0.5rem;">↗ visit</a>':'');
+    c.appendChild(header);
+    // Image gallery
+    renderProjectImages(c, i);
     g.appendChild(c);
   });
   const add = document.createElement('button'); add.className = 'add-project-btn'; add.onclick = openProjModal;
@@ -501,13 +566,15 @@ function renderProjects() {
   document.getElementById('statP').textContent = projects.length;
   document.querySelectorAll('.project-rm').forEach(b => b.style.display = isOwner ? 'block' : 'none');
   document.querySelectorAll('.add-project-btn').forEach(b => b.style.display = isOwner ? 'flex' : 'none');
+  // Toggle owner-mode class on body for CSS-driven visibility
+  document.body.classList.toggle('owner-mode', isOwner);
 }
 function removeProject(e, i) { e.stopPropagation(); projects.splice(i,1); saveProjects(); renderProjects(); }
 function openProjModal() { document.getElementById('projectModal').classList.add('open'); setTimeout(()=>document.getElementById('projName').focus(),50); }
 function closeProjModal() { document.getElementById('projectModal').classList.remove('open'); ['projName','projDesc','projStack','projLink'].forEach(id=>document.getElementById(id).value=''); }
 function saveProject() {
   const name = document.getElementById('projName').value.trim(); if (!name) return;
-  projects.push({ name, desc: document.getElementById('projDesc').value.trim()||'no description.', stack: document.getElementById('projStack').value.split(',').map(s=>s.trim()).filter(Boolean), link: document.getElementById('projLink').value.trim() });
+  projects.push({ name, desc: document.getElementById('projDesc').value.trim()||'no description.', stack: document.getElementById('projStack').value.split(',').map(s=>s.trim()).filter(Boolean), link: document.getElementById('projLink').value.trim(), images:[] });
   saveProjects(); renderProjects(); closeProjModal();
 }
 document.getElementById('projectModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeProjModal(); });
