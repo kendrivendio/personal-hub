@@ -607,19 +607,13 @@ async function checkOwnerSession() {
   } catch {
     isOwner = false;
   }
-  await loadHubData();
   setOwnerUI(isOwner);
 }
  
-// Start Last.fm immediately — doesn't need owner check
+// All three kick off immediately and in parallel — nothing waits for anything else
 initLastFm();
+loadHubData();
 checkOwnerSession();
- 
-checkOwnerSession();
-</script>
-</body>
-</html>
- 
 </script>
 </body>
 </html>
