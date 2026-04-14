@@ -400,14 +400,34 @@ async function initLastFm() {
 // cols: 1-6 (out of 6 grid columns), rows: 1-2
 let moodImages = [];
  
-async function loadMoodImages() {
-  const cached = localStorage.getItem('moodImages_v3');
-  if (cached) moodImages = JSON.parse(cached);
+async function loadHubData() {
+  try {
+    const res = await fetch('/api/data/get');
+    const data = await res.json();
+    moodImages = data.moodImages || [];
+    // Merge server projects with local if server is empty
+    if (data.projects && data.projects.length > 0) projects = data.projects;
+  } catch {
+    // Fallback to localStorage if server unreachable
+    const cached = localStorage.getItem('moodImages_v3');
+    if (cached) moodImages = JSON.parse(cached);
+  }
   renderMood();
+  renderProjects();
 }
  
-function saveMoodCache() {
+async function saveHubData() {
+  // Save to server (visible to everyone)
+  try {
+    await fetch('/api/data/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ moodImages, projects })
+    });
+  } catch { console.warn('save failed'); }
+  // Also keep localStorage as fast cache
   localStorage.setItem('moodImages_v3', JSON.stringify(moodImages));
+  localStorage.setItem('projects', JSON.stringify(projects));
 }
  
 function renderMood() {
@@ -429,7 +449,7 @@ function renderMood() {
         e.stopPropagation();
         await fetch('/api/images/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ publicId: img.publicId }) });
         moodImages.splice(i, 1);
-        saveMoodCache(); renderMood();
+        saveHubData(); renderMood();
       };
       c.appendChild(rm);
  
@@ -438,7 +458,7 @@ function renderMood() {
  
       const makeBtn = (label, action) => {
         const b = document.createElement('button'); b.className = 'resize-btn'; b.textContent = label;
-        b.onclick = (e) => { e.stopPropagation(); action(); saveMoodCache(); renderMood(); };
+        b.onclick = (e) => { e.stopPropagation(); action(); saveHubData(); renderMood(); };
         return b;
       };
  
@@ -475,7 +495,7 @@ function handleMood(e) {
         if (data.url) {
           const idx = moodImages.findIndex(m => m.publicId === tempId);
           if (idx !== -1) moodImages[idx] = { ...moodImages[idx], url: data.url, publicId: data.publicId };
-          saveMoodCache(); renderMood();
+          saveHubData(); renderMood();
         }
       } catch {
         moodImages = moodImages.filter(m => m.publicId !== tempId);
@@ -493,7 +513,7 @@ let projects = JSON.parse(localStorage.getItem('projects') || 'null') || [
   { name:'Art Projects', desc:"All the art projects I've worked on.", stack:['Fanart','Watercolor','Originals'], link:'', images:[] },
   { name:'Engineering',  desc:"All the Engineering projects I've worked on at MNTC.", stack:['VEXCode','VEX Robotics','BattleBots (none done yet)'], link:'', images:[] }
 ];
-function saveProjects() { localStorage.setItem('projects', JSON.stringify(projects)); }
+// saveProjects merged into saveHubData
  
 function renderProjectImages(card, projIndex) {
   let imgGrid = card.querySelector('.project-images');
@@ -508,7 +528,7 @@ function renderProjectImages(card, projIndex) {
       e.stopPropagation();
       await fetch('/api/images/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ publicId: img.publicId }) });
       projects[projIndex].images.splice(ii, 1);
-      saveProjects(); renderProjectImages(card, projIndex);
+      saveHubData(); renderProjectImages(card, projIndex);
     };
     cell.appendChild(rmBtn);
     imgGrid.appendChild(cell);
@@ -525,14 +545,14 @@ function renderProjectImages(card, projIndex) {
         const tempId = 'uploading_'+Date.now();
         if (!projects[projIndex].images) projects[projIndex].images = [];
         projects[projIndex].images.push({ url: base64, publicId: tempId });
-        saveProjects(); renderProjectImages(card, projIndex);
+        saveHubData(); renderProjectImages(card, projIndex);
         try {
           const resp = await fetch('/api/images/upload', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ image: base64 }) });
           const data = await resp.json();
           if (data.url) {
             const idx = projects[projIndex].images.findIndex(m => m.publicId === tempId);
             if (idx !== -1) projects[projIndex].images[idx] = { url: data.url, publicId: data.publicId };
-            saveProjects(); renderProjectImages(card, projIndex);
+            saveHubData(); renderProjectImages(card, projIndex);
           }
         } catch { projects[projIndex].images = projects[projIndex].images.filter(m => m.publicId !== tempId); renderProjectImages(card, projIndex); }
       }
@@ -569,13 +589,13 @@ function renderProjects() {
   // Toggle owner-mode class on body for CSS-driven visibility
   document.body.classList.toggle('owner-mode', isOwner);
 }
-function removeProject(e, i) { e.stopPropagation(); projects.splice(i,1); saveProjects(); renderProjects(); }
+function removeProject(e, i) { e.stopPropagation(); projects.splice(i,1); saveHubData(); renderProjects(); }
 function openProjModal() { document.getElementById('projectModal').classList.add('open'); setTimeout(()=>document.getElementById('projName').focus(),50); }
 function closeProjModal() { document.getElementById('projectModal').classList.remove('open'); ['projName','projDesc','projStack','projLink'].forEach(id=>document.getElementById(id).value=''); }
 function saveProject() {
   const name = document.getElementById('projName').value.trim(); if (!name) return;
   projects.push({ name, desc: document.getElementById('projDesc').value.trim()||'no description.', stack: document.getElementById('projStack').value.split(',').map(s=>s.trim()).filter(Boolean), link: document.getElementById('projLink').value.trim(), images:[] });
-  saveProjects(); renderProjects(); closeProjModal();
+  saveHubData(); renderProjects(); closeProjModal();
 }
 document.getElementById('projectModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeProjModal(); });
  
@@ -587,8 +607,7 @@ async function checkOwnerSession() {
   } catch {
     isOwner = false;
   }
-  await loadMoodImages();
-  renderProjects();
+  await loadHubData();
   setOwnerUI(isOwner);
 }
  
