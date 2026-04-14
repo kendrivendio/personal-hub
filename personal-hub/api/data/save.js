@@ -1,7 +1,7 @@
 // api/data/save.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
- 
+
   // Verify owner cookie
   const cookieHeader = req.headers.cookie || '';
   const match = cookieHeader.match(/owner_token=([^;]+)/);
@@ -13,17 +13,21 @@ export default async function handler(req, res) {
     const expectedSig = Buffer.from(expires + '|' + process.env.OWNER_PASSWORD).toString('base64');
     if (sigB64 !== expectedSig) return res.status(401).json({ error: 'token_invalid' });
   } catch { return res.status(401).json({ error: 'token_invalid' }); }
- 
+
   const url   = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
   const { moodImages, projects } = req.body;
- 
-  await fetch(`${url}/set/hub_data`, {
+
+  // Upstash REST API: POST /set/key with plain string body
+  const r = await fetch(`${url}/set/hub_data`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ value: JSON.stringify({ moodImages, projects }) })
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(JSON.stringify({ moodImages, projects }))
   });
- 
-  return res.status(200).json({ ok: true });
+
+  const d = await r.json();
+  return res.status(200).json({ ok: true, result: d });
 }
- 
