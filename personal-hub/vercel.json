@@ -19,6 +19,14 @@
     {
       "source": "/api/images/delete",
       "destination": "/api/images/delete"
+    },
+    {
+      "source": "/api/data/get",
+      "destination": "/api/data/get"
+    },
+    {
+      "source": "/api/data/save",
+      "destination": "/api/data/save"
     }
   ]
 }
