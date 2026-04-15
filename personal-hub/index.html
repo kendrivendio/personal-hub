@@ -21,7 +21,7 @@
   body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,245,255,0.03) 2px, rgba(0,245,255,0.03) 4px); pointer-events: none; z-index: 9999; }
   body::after { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
   .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; position: relative; z-index: 1; }
- 
+
   .site-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0 2rem; border-bottom: 1px solid var(--panel-border); margin-bottom: 2rem; }
   .site-logo { font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 900; color: var(--burgundy); text-shadow: 0 0 20px rgba(247,0,255,0.6); letter-spacing: 0.1em; }
   .site-logo span { color: var(--neon-magenta); }
@@ -29,22 +29,22 @@
   .header-status { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: var(--neon-green); display: flex; align-items: center; gap: 0.5rem; }
   .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); animation: blink 1.8s infinite; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
- 
+
   .owner-btn { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; cursor: pointer; border: 1px solid var(--panel-border); color: var(--text-muted); padding: 4px 10px; transition: all 0.2s; }
   .owner-btn:hover { border-color: var(--burgundy); color: var(--burgundy); }
   .owner-btn.active { border-color: var(--neon-magenta); color: var(--neon-magenta); box-shadow: 0 0 10px rgba(255,0,200,0.3); }
- 
+
   .panel { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 2px; position: relative; overflow: hidden; }
   .panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--burgundy), transparent); }
   .panel-header { padding: 0.6rem 1.1rem; border-bottom: 1px solid var(--panel-border); display: flex; align-items: center; gap: 0.75rem; }
   .panel-label { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: var(--burgundy); text-transform: uppercase; letter-spacing: 0.15em; }
   .panel-label-secondary { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-muted); margin-left: auto; }
   .panel-body { padding: 1.2rem 1.1rem; }
- 
+
   .main-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
   .col-span-2 { grid-column: span 2; }
   .col-span-3 { grid-column: span 3; }
- 
+
   .bio-name { font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 900; color: var(--text-primary); line-height: 1.1; letter-spacing: -0.02em; animation: glitch 5s infinite; }
   .bio-name .accent { color: var(--burgundy); text-shadow: 0 0 20px rgba(255,0,255,0.5); }
   @keyframes glitch { 0%,90%,100%{transform:translate(0)} 91%{transform:translate(-3px,1px)} 93%{transform:translate(3px,-1px)} 95%{transform:translate(0)} }
@@ -52,7 +52,7 @@
   .bio-text { font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; }
   .bio-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
   .bio-tag { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--burgundy); border: 1px solid rgba(212,0,255,0.288); padding: 2px 9px; letter-spacing: 0.1em; text-transform: uppercase; }
- 
+
   .spotify-viewer-msg { font-family: 'Share Tech Mono', monospace; font-size: 0.68rem; color: var(--text-muted); line-height: 1.8; }
   .spotify-auth-btn { display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; padding: 0.5rem 1rem; cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.2s; }
   .spotify-auth-btn:hover { background: rgba(57,255,20,0.1); box-shadow: 0 0 15px rgba(57,255,20,0.3); }
@@ -61,7 +61,7 @@
   .equalizer { display: flex; align-items: flex-end; gap: 2px; height: 16px; }
   .eq-bar { width: 3px; background: var(--burgundy); border-radius: 1px; animation: eq 0.6s ease-in-out infinite alternate; }
   .eq-bar:nth-child(1){height:6px;animation-delay:0s}.eq-bar:nth-child(2){height:13px;animation-delay:0.1s}.eq-bar:nth-child(3){height:8px;animation-delay:0.2s}.eq-bar:nth-child(4){height:15px;animation-delay:0.3s}.eq-bar:nth-child(5){height:5px;animation-delay:0.15s}
- 
+
   .mood-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; grid-auto-rows: 90px; }
   .mood-cell { background: var(--panel-border); position: relative; overflow: hidden; border: 1px solid transparent; transition: border-color 0.2s; }
   .mood-cell:hover { border-color: var(--burgundy); }
@@ -76,7 +76,7 @@
   .mood-cell.owner-cell .rm-btn { display: block; }
   .mood-upload-btn { display: none; align-items: center; gap: 0.5rem; background: transparent; border: 1px dashed rgba(0,245,255,0.25); color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 0.63rem; padding: 0.45rem 1rem; cursor: pointer; width: 100%; justify-content: center; margin-top: 0.6rem; letter-spacing: 0.1em; transition: all 0.2s; }
   .mood-upload-btn:hover { border-color: var(--burgundy); color: var(--burgundy); }
- 
+
   .projects-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.9rem; }
   .project-card { border: 1px solid var(--panel-border); padding: 1rem; position: relative; transition: border-color 0.2s, transform 0.2s; background: rgba(10,10,20,0.5); }
   .project-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--neon-magenta), transparent); opacity: 0; transition: opacity 0.2s; }
@@ -101,13 +101,13 @@
   .proj-add-img-btn:hover { border-color: var(--burgundy); color: var(--burgundy); }
   .owner-mode .proj-add-img-btn { display: flex; }
   .add-project-btn:hover { border-color: var(--burgundy); color: var(--burgundy); background: rgba(128,0,32,0.05); }
- 
+
   .sys-stat-label { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-muted); margin-bottom: 3px; }
   .sys-stat-val { font-family: 'Orbitron', monospace; font-size: 1.4rem; font-weight: 900; }
- 
+
   .site-footer { border-top: 1px solid var(--panel-border); padding: 1.2rem 0; margin-top: 2rem; display: flex; align-items: center; justify-content: space-between; }
   .footer-mono { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-muted); letter-spacing: 0.1em; }
- 
+
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 2000; display: none; align-items: center; justify-content: center; }
   .modal-backdrop.open { display: flex; }
   .modal { background: var(--panel-bg); border: 1px solid var(--burgundy); max-width: 380px; width: 90%; padding: 1.8rem; position: relative; box-shadow: 0 0 40px rgba(128,0,32,0.2); }
@@ -123,7 +123,7 @@
   .btn-submit { background: rgba(128,0,32,0.1); border: 1px solid var(--burgundy); color: var(--burgundy); font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; padding: 0.45rem 0.9rem; cursor: pointer; letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.2s; }
   .btn-submit:hover { background: rgba(128,0,32,0.22); }
   .modal-close { position: absolute; top: 0.9rem; right: 0.9rem; background: none; border: none; color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; cursor: pointer; }
- 
+
   @keyframes prog { from{width:20%} to{width:85%} }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: var(--dark-bg); }
@@ -134,7 +134,7 @@
 </style>
 </head>
 <body>
- 
+
 <!-- OWNER LOGIN MODAL -->
 <div class="modal-backdrop" id="ownerModal">
   <div class="modal">
@@ -151,7 +151,7 @@
     </div>
   </div>
 </div>
- 
+
 <!-- ADD PROJECT MODAL -->
 <div class="modal-backdrop" id="projectModal">
   <div class="modal" style="max-width:440px;">
@@ -167,7 +167,7 @@
     </div>
   </div>
 </div>
- 
+
 <div class="container">
   <header class="site-header">
     <div class="site-logo">// personal<span>_hub</span></div>
@@ -176,9 +176,9 @@
       <button class="owner-btn" id="ownerBtn" onclick="handleOwnerBtn()">⚿ owner</button>
     </div>
   </header>
- 
+
   <div class="main-grid">
- 
+
     <!-- BIO -->
     <div class="panel col-span-2">
       <div class="panel-header"><span class="panel-label">// id.profile</span><span class="panel-label-secondary">v2.4.1</span></div>
@@ -194,7 +194,7 @@
         </div>
       </div>
     </div>
- 
+
     <!-- SPOTIFY -->
     <div class="panel">
       <div class="panel-header"><span class="panel-label">// now_playing</span><span class="panel-label-secondary" id="spStatus">offline</span></div>
@@ -218,7 +218,7 @@
         </div>
       </div>
     </div>
- 
+
     <!-- MOOD BOARD -->
     <div class="panel col-span-2">
       <div class="panel-header"><span class="panel-label">// mood.board</span><span class="panel-label-secondary" id="moodCount">0 images</span></div>
@@ -231,7 +231,7 @@
         <input type="file" id="moodInput" accept="image/*" multiple style="display:none;" onchange="handleMood(event)">
       </div>
     </div>
- 
+
     <!-- SYS STATS -->
     <div class="panel">
       <div class="panel-header"><span class="panel-label">// sys.stats</span></div>
@@ -244,7 +244,7 @@
         </div>
       </div>
     </div>
- 
+
     <!-- PROJECTS -->
     <div class="panel col-span-3">
       <div class="panel-header">
@@ -255,15 +255,15 @@
         <div class="projects-grid" id="projectsGrid"></div>
       </div>
     </div>
- 
+
   </div>
- 
+
   <footer class="site-footer">
     <span class="footer-mono">// built with: html + css + js + vibes</span>
     <span class="footer-mono" id="footerTime"></span>
   </footer>
 </div>
- 
+
 <script>
 // ═══════════════════════════════════════════════════════
 // CONFIG — Last.fm. Password lives on the server.
@@ -273,10 +273,10 @@ const LASTFM_CONFIG = {
   username: 'K_Vendio'
 };
 // ═══════════════════════════════════════════════════════
- 
+
 // ── OWNER AUTH ──
 let isOwner = false;
- 
+
 function setOwnerUI(on) {
   document.getElementById('ownerBadge').style.display    = on ? 'block' : 'none';
   document.getElementById('moodUploadBtn').style.display = on ? 'flex'  : 'none';
@@ -288,7 +288,7 @@ function setOwnerUI(on) {
   document.body.classList.toggle('owner-mode', on);
   renderMood();
 }
- 
+
 function handleOwnerBtn() {
   if (isOwner) {
     fetch('/api/owner/logout', { method: 'POST' }).finally(() => {
@@ -299,7 +299,7 @@ function handleOwnerBtn() {
     openOwnerModal();
   }
 }
- 
+
 function openOwnerModal() {
   document.getElementById('ownerModal').classList.add('open');
   document.getElementById('ownerPass').value = '';
@@ -307,7 +307,7 @@ function openOwnerModal() {
   setTimeout(() => document.getElementById('ownerPass').focus(), 50);
 }
 function closeOwnerModal() { document.getElementById('ownerModal').classList.remove('open'); }
- 
+
 async function submitOwnerAuth() {
   const password = document.getElementById('ownerPass').value;
   const errEl = document.getElementById('ownerError');
@@ -332,10 +332,10 @@ async function submitOwnerAuth() {
     errEl.style.display = 'block';
   }
 }
- 
+
 document.getElementById('ownerModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeOwnerModal(); });
 document.getElementById('ownerPass').addEventListener('keydown', e => { if (e.key === 'Enter') submitOwnerAuth(); if (e.key === 'Escape') closeOwnerModal(); });
- 
+
 // ── CLOCK ──
 const t0 = Date.now();
 setInterval(() => {
@@ -344,7 +344,7 @@ setInterval(() => {
 }, 1000);
 function tickFooter() { document.getElementById('footerTime').textContent = '// '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
 tickFooter(); setInterval(tickFooter, 1000);
- 
+
 // ── LAST.FM ──
 function showPlaying(track, isNowPlaying) {
   document.getElementById('spViewerOffline').style.display = 'none';
@@ -356,7 +356,7 @@ function showPlaying(track, isNowPlaying) {
   document.getElementById('spStatus').textContent = isNowPlaying ? 'live' : 'last played';
   document.getElementById('spStatus').style.color = isNowPlaying ? 'var(--neon-green)' : 'var(--text-muted)';
 }
- 
+
 async function fetchAndRender() {
   const url = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${LASTFM_CONFIG.username}&api_key=${LASTFM_CONFIG.apiKey}&format=json&limit=1`;
   const r = await fetch(url);
@@ -369,7 +369,7 @@ async function fetchAndRender() {
   }
   const latest = Array.isArray(tracks) ? tracks[0] : tracks;
   const isNowPlaying = latest['@attr']?.nowplaying === 'true';
- 
+
   if (!isNowPlaying) {
     // Check how long ago it was scrobbled — if over 10 mins, assume stopped
     const scrobbledAt = parseInt(latest.date?.uts || '0') * 1000;
@@ -382,10 +382,10 @@ async function fetchAndRender() {
       return;
     }
   }
- 
+
   showPlaying(latest, isNowPlaying);
 }
- 
+
 async function initLastFm() {
   try {
     await fetchAndRender();
@@ -394,42 +394,45 @@ async function initLastFm() {
     document.getElementById('spViewerOffline').style.display = 'block';
   }
 }
- 
+
 // ── MOOD BOARD ──
 // moodImages: [{ url, publicId, cols, rows }]
 // cols: 1-6 (out of 6 grid columns), rows: 1-2
 let moodImages = [];
- 
+
 async function loadHubData() {
   try {
     const res = await fetch('/api/data/get');
     const data = await res.json();
     moodImages = data.moodImages || [];
-    // Merge server projects with local if server is empty
-    if (data.projects && data.projects.length > 0) projects = data.projects;
+    // Use server projects if they exist, otherwise keep defaults
+    if (data.projects && data.projects.length > 0) {
+      // Ensure all projects have images array
+      projects = data.projects.map(p => ({ images: [], ...p }));
+    }
   } catch {
-    // Fallback to localStorage if server unreachable
+    // Server unreachable — keep defaults, use localStorage mood cache
     const cached = localStorage.getItem('moodImages_v3');
     if (cached) moodImages = JSON.parse(cached);
   }
   renderMood();
   renderProjects();
 }
- 
+
 async function saveHubData() {
-  // Save to server (visible to everyone)
+  // Save to server — visible to all devices
   try {
     await fetch('/api/data/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ moodImages, projects })
     });
-  } catch { console.warn('save failed'); }
-  // Also keep localStorage as fast cache
+  } catch { console.warn('save failed — not logged in or server error'); }
+  // Fast local cache as fallback
   localStorage.setItem('moodImages_v3', JSON.stringify(moodImages));
   localStorage.setItem('projects', JSON.stringify(projects));
 }
- 
+
 function renderMood() {
   const g = document.getElementById('moodGrid'); g.innerHTML = '';
   moodImages.forEach((img, i) => {
@@ -440,7 +443,7 @@ function renderMood() {
     c.style.gridColumn = 'span ' + cols;
     c.style.gridRow = 'span ' + rows;
     c.innerHTML = '<img src="'+img.url+'" alt="">';
- 
+
     if (isOwner) {
       // Remove button
       const rm = document.createElement('button');
@@ -452,16 +455,16 @@ function renderMood() {
         saveHubData(); renderMood();
       };
       c.appendChild(rm);
- 
+
       // Resize controls
       const rc = document.createElement('div'); rc.className = 'resize-controls';
- 
+
       const makeBtn = (label, action) => {
         const b = document.createElement('button'); b.className = 'resize-btn'; b.textContent = label;
         b.onclick = (e) => { e.stopPropagation(); action(); saveHubData(); renderMood(); };
         return b;
       };
- 
+
       rc.appendChild(makeBtn('w+', () => { if(moodImages[i].cols < 6) moodImages[i].cols = (moodImages[i].cols||2)+1; }));
       rc.appendChild(makeBtn('w-', () => { if(moodImages[i].cols > 1) moodImages[i].cols = (moodImages[i].cols||2)-1; }));
       rc.appendChild(makeBtn('h+', () => { if(moodImages[i].rows < 3) moodImages[i].rows = (moodImages[i].rows||1)+1; }));
@@ -470,12 +473,12 @@ function renderMood() {
     }
     g.appendChild(c);
   });
- 
+
   const n = moodImages.length;
   document.getElementById('moodCount').textContent = n+' image'+(n!==1?'s':'');
   document.getElementById('statM').textContent = n;
 }
- 
+
 function handleMood(e) {
   Array.from(e.target.files).forEach(f => {
     if (moodImages.length >= 6) return;
@@ -506,15 +509,17 @@ function handleMood(e) {
   });
   e.target.value = '';
 }
- 
+
 // ── PROJECTS ──
 // projects: [{ name, desc, stack, link, images: [{url, publicId}] }]
-let projects = JSON.parse(localStorage.getItem('projects') || 'null') || [
+// Initialized with defaults — loadHubData() will overwrite from server
+const DEFAULT_PROJECTS = [
   { name:'Art Projects', desc:"All the art projects I've worked on.", stack:['Fanart','Watercolor','Originals'], link:'', images:[] },
   { name:'Engineering',  desc:"All the Engineering projects I've worked on at MNTC.", stack:['VEXCode','VEX Robotics','BattleBots (none done yet)'], link:'', images:[] }
 ];
+let projects = DEFAULT_PROJECTS;
 // saveProjects merged into saveHubData
- 
+
 function renderProjectImages(card, projIndex) {
   let imgGrid = card.querySelector('.project-images');
   if (!imgGrid) { imgGrid = document.createElement('div'); imgGrid.className = 'project-images'; card.appendChild(imgGrid); }
@@ -561,7 +566,7 @@ function renderProjectImages(card, projIndex) {
   };
   imgGrid.appendChild(addBtn);
 }
- 
+
 function renderProjects() {
   const g = document.getElementById('projectsGrid'); g.innerHTML = '';
   projects.forEach((p, i) => {
@@ -598,7 +603,7 @@ function saveProject() {
   saveHubData(); renderProjects(); closeProjModal();
 }
 document.getElementById('projectModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeProjModal(); });
- 
+
 // ── INIT ──
 async function checkOwnerSession() {
   try {
@@ -609,11 +614,14 @@ async function checkOwnerSession() {
   }
   setOwnerUI(isOwner);
 }
- 
+
 // All three kick off immediately and in parallel — nothing waits for anything else
 initLastFm();
 loadHubData();
 checkOwnerSession();
+</script>
+</body>
+</html>
 </script>
 </body>
 </html>
